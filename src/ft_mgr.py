@@ -29,6 +29,7 @@ class FtMgr(object):
     def dump_mgr_info(self):
         print('Mgr Name is %s'%(self.name))
         ft_util.ft_util_dump_task_list(self.on_task_list, 'on_list')
+        ft_util.ft_util_dump_task_list(self.done_task_list, 'done_list')
 
     def switch_task(self, task_id, op, params):
         print('switch E: op %d, task_id %s'%(op, task_id))
@@ -45,14 +46,28 @@ class FtMgr(object):
         elif op == FtMgrTaskOps.FtMgrTaskProcOn:
             self.__proc_task(tmp_task)
         elif op == FtMgrTaskOps.FtMgrTaskDone:
-            pass
+            self.__done_task(tmp_task)
+        elif op == FtMgrTaskOps.FtMgrTaskSuspend:
+            self.__stop_task(tmp_task)
 
         print('switch_task X success')
 
         return 0
 
     def __find_task_by_id(self, task_id):
-        pass
+        tmp_task = ft_util.ft_util_find_task_in_list(self.on_task_list, task_id)
+        if None != tmp_task:
+            return tmp_task
+
+        tmp_task = ft_util.ft_util_find_task_in_list(self.done_task_list, task_id)
+        if None != tmp_task:
+            return tmp_task
+
+        tmp_task = ft_util.ft_util_find_task_in_list(self.abandon_task_list, task_id)
+        if None != tmp_task:
+            return tmp_task
+
+        return None
 
     def get_mgr_state(self):
         return self.mgr_state
@@ -60,6 +75,9 @@ class FtMgr(object):
     def __gen_task_id(self):
         #we think we can only create one task in one second
         return ft_util.ft_util_ts2str(ft_util.ft_util_get_cur_ts())
+
+    def __clear_cur_task(self):
+        self.cur_task = None
 
     def __new_task(self, params):
         if params is None:
@@ -76,10 +94,34 @@ class FtMgr(object):
     def __proc_task(self, task):
         if task is None:
             assert 0, 'task is None'
-        # TODO: Add Real Task ProcOps
+
+        if None != self.cur_task:
+            self.cur_task.stop()
 
         self.cur_task = task
+        self.cur_task.start()
         self.mgr_state = FtMgrState.FtMgrWorking
+
+    def __done_task(self, task):
+        task_state = task.get_state()
+
+        if (FtTaskState.FtTaskWorking == task_state) or (FtTaskState.FtTaskIdle == task_state):
+            task.done()
+            ft_util.ft_util_pop_task_from_list(task, self.on_task_list)
+
+            self.done_task_list.append(task)
+
+        if (task == self.cur_task):
+            self.mgr_state = FtMgrState.FtMgrIdle
+            self.__clear_cur_task()
+
+    def __stop_task(self, task):
+        task_state = task.get_state()
+        if (FtTaskState.FtTaskWorking == task_state):
+            task.stop()
+            if (task == self.cur_task):
+                self.mgr_state = FtMgrState.FtMgrIdle
+
 
     def get_cur_task(self):
         return self.cur_task

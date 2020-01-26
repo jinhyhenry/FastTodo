@@ -8,6 +8,18 @@ def __new_task_server(task_para):
 	assert task_para != None, 'task_param is none'
 	gFtMgr.switch_task('', FtMgrTaskOps.FtMgrTaskNew, task_para)
 
+def __start_task_server(task_id):
+	assert task_id != None, 'task_id is none'
+	gFtMgr.switch_task(task_id, FtMgrTaskOps.FtMgrTaskProcOn, None)
+
+def __stop_task_server(task_id):
+	assert task_id != None, 'task_id is none'
+	gFtMgr.switch_task(task_id, FtMgrTaskOps.FtMgrTaskSuspend, None)
+
+def __done_task_server(task_id):
+	assert task_id != None, 'task_id is none'
+	gFtMgr.switch_task(task_id, FtMgrTaskOps.FtMgrTaskDone, None)
+
 def __new_task_ui():
 	para = FtTaskParam()
 
@@ -60,10 +72,10 @@ def __print_menu():
 	print('help[h]          --- help(menu)')
 	print('exit[q]          --- quit app')
 
-	print('(dev)mgr_dump    --- dump mgr info(for developer)')
+	print('(dev)mgr_dump[md]    --- dump mgr info(for developer)')
 
 def __parse_cmd(cmd):
-	if cmd == 'help' or cmd == 'h':
+	if cmd == 'help' or cmd == 'h' or cmd == '\n':
 		__print_menu()
 		return
 
@@ -78,7 +90,22 @@ def __parse_cmd(cmd):
 		__new_task_ui()
 		return
 
-	if cmd == 'mgr_dump':
+	cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+	if cmd_arg_l[0] == 'start' or cmd_arg_l[0] == 's':
+		__start_task_server(cmd_arg_l[1])
+		return
+
+	cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+	if cmd_arg_l[0] == 'pause' or cmd_arg_l[0] == 'p':
+		__stop_task_server(cmd_arg_l[1])
+		return
+
+	cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+	if cmd_arg_l[0] == 'finish' or cmd_arg_l[0] == 'f':
+		__done_task_server(cmd_arg_l[1])
+		return
+
+	if cmd == 'mgr_dump' or cmd == 'md':
 		assert None != gFtMgr, 'none ft'
 		gFtMgr.dump_mgr_info()
 		return

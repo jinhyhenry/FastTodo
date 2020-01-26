@@ -22,8 +22,8 @@ class FtTask(object):
 
         self.create_time = ft_util.ft_util_get_cur_ts()
 
-        self.start_time = None
-        self.end_time = None
+        self.start_time = 0
+        self.end_time = 0
 
         self.date_time = params.date_time
         self.is_date = params.is_date
@@ -45,23 +45,32 @@ class FtTask(object):
         # TODO: UnLock Here
         pass
 
+    def get_state(self):
+        return self.state
+
     def start(self):
         self.start_time = ft_util.ft_util_get_cur_ts()
         self.state = FtTaskState.FtTaskWorking
+        print('task %s-%s just start'%(self.task_id, self.name))
 
     def abandon(self):
         self.end_time = ft_util.ft_util_get_cur_ts()
         self.state = FtTaskState.FtTaskIdle
+        print('task %s-%s just abandon'%(self.task_id, self.name))
 
     def stop(self):
         self.end_time = ft_util.ft_util_get_cur_ts()
         self.state = FtTaskState.FtTaskIdle
+        print('task %s-%s just stop'%(self.task_id, self.name))
 
     def done(self):
-        pass
+        self.end_time = ft_util.ft_util_get_cur_ts()
+        self.state = FtTaskState.FtTaskDone
+        print('task %s-%s just done'%(self.task_id, self.name))
 
     def dump(self):
         print('id:[%s] %s create in %s, prior %d, is_date %d'%(self.task_id, self.name, self.create_time, self.prior, self.is_date))
+        print('state: [%d], start_time: [%d]'%(self.state, self.start_time))
 
 
 
