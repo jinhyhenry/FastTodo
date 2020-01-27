@@ -61,6 +61,17 @@ def __new_task_ui():
 	__new_task_server(para)
 	print('new task done!')
 
+def __get_task_list(type):
+	if type == 'on':
+		return gFtMgr.get_task_list()
+	elif type == 'done':
+		return gFtMgr.get_done_task_list()
+	elif type == 'abandon':
+		return gFtMgr.get_abandon_task_list()
+
+def __print_tasks():
+	tmp_list = __get_task_list('on')
+
 def __print_menu():
 	print('new[n]           --- new a task')
 	print('start[s] xxx     --- start xxx task')

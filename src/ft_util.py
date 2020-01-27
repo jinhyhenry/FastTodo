@@ -29,12 +29,14 @@ def ft_util_dump_task_list(tl, tag):
     if None is tl:
         print('\n task_list - %s is None , Fail to Dump'%(tag))
         return
-    print('     task_list %s dump begin --->'%(tag))
+    print('     task_list %s dump begin --->\n'%(tag))
+    #       id     name  crea stat prio  is_da state 
+    print('%20s\t %16s\t %11s\t %11s\t %6s\t %8s\t %12s\t'%('task id', 'name', 'create ts', 'start ts', 'prior', 'is_date', 'state'))
 
     for x in tl:
         x.dump()
 
-    print('<--- task_list %s dump end \n'%(tag))
+    print('\n<--- task_list %s dump end \n'%(tag))
 
 def ft_util_find_task_in_list(tl, tsk_id):
     assert tl != None, 'task list is none'

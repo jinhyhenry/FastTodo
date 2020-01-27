@@ -1,5 +1,15 @@
 import ft_util
 
+def task_state_i2a(state_int):
+    if state_int == FtTaskState.FtTaskIdle:
+        return 'TaskIdle'
+    if state_int == FtTaskState.FtTaskWorking:
+        return 'Working'
+    if state_int == FtTaskState.FtTaskDone:
+        return 'Done'
+    if state_int == FtTaskState.FtTaskDone:
+        return 'Abandon'
+
 class FtTaskState(object):
     FtTaskIdle = 0
     FtTaskWorking = 1
@@ -69,8 +79,8 @@ class FtTask(object):
         print('task %s-%s just done'%(self.task_id, self.name))
 
     def dump(self):
-        print('id:[%s] %s create in %s, prior %d, is_date %d'%(self.task_id, self.name, self.create_time, self.prior, self.is_date))
-        print('state: [%d], start_time: [%d]'%(self.state, self.start_time))
+        #       id     name   crea    stat   prio  is_da state 
+        print('%20s\t %16s\t %11d\t %11d\t %6d\t %8d\t %12s\t'%(self.task_id, self.name, self.create_time, self.start_time, self.prior, self.is_date, task_state_i2a(self.state)))
 
 
 
