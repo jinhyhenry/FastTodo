@@ -1,6 +1,9 @@
 import time
 import sys
 
+def ft_util_get_mono_ts_ms():
+    return int(1000 * time.monotonic())
+
 def ft_util_get_cur_ts():
     return int(time.time())
 
