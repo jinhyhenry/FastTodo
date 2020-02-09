@@ -1,5 +1,6 @@
 import ft_util
-from ft_task import FtTaskParam,FtTask,FtTaskState
+from ft_task import FtTaskParam,FtTask,FtTaskState,FtTaskDb
+from ft_ust import FtUst
 
 class FtMgrState():
     FtMgrIdle = 0
@@ -14,6 +15,8 @@ class FtMgrTaskOps():
     FtMgrTaskProcOn = 4
     FtMgrTaskDone = 5
 
+g_db_file_name = 'ft_task_rec.db'
+
 class FtMgr(object):
     def __init__(self, name):
         self.name = name
@@ -24,7 +27,32 @@ class FtMgr(object):
         self.abandon_task_list = []
         self.done_task_list = []
 
+        self.__init_ust()
+        self.__init_db_task_rec()
+
         print('mgr: %s created'%(self.name))
+
+    def __init_ust(self):
+        self.ust = FtUst()
+
+    def __init_tasks_from_db_result(self, db_rec_result):
+        print(db_rec_result)
+        # TODO: create tasks
+
+    def __init_db_task_rec(self):
+        db_file = self.__compose_task_file_name(g_db_file_name)
+        self.task_rec_db = FtTaskDb(db_file)
+
+        self.__init_tasks_from_db_result(self.task_rec_db.load_all_tasks(False))
+
+    def reset_task_db(self):
+        self.task_rec_db.close()
+        ft_util.ft_util_rm_file(self.__compose_task_file_name(g_db_file_name))
+
+        self.__init_db_task_rec()
+
+    def __compose_task_file_name(self, file_name):
+        return (self.ust.query('workspace_path') + file_name)
 
     def dump_mgr_info(self):
         print('Mgr Name is %s'%(self.name))
@@ -89,6 +117,9 @@ class FtMgr(object):
         self.on_task_list.append(task)
 
         task.task_id = self.__gen_task_id()
+
+        task.set_task_file(self.task_rec_db, self.__compose_task_file_name(task.task_id + '.log'))
+
         print('new task %s'%(task.task_id))
 
     def __proc_task(self, task):
@@ -122,7 +153,6 @@ class FtMgr(object):
             if (task == self.cur_task):
                 self.mgr_state = FtMgrState.FtMgrIdle
 
-
     def get_cur_task(self):
         return self.cur_task
 
@@ -134,6 +164,13 @@ class FtMgr(object):
 
     def get_done_task_list(self):
         return self.done_task_list
+
+    def set_workspace(self, path):
+        self.ust.set('workspace_path', path)
+        # TODO: Reload file_path for every task
+
+    def get_workspace(self):
+        return self.ust.query('workspace_path')
 
 
 

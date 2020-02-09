@@ -1,5 +1,6 @@
 import time
 import sys
+import os
 
 def ft_util_get_cur_ts():
     return int(time.time())
@@ -65,5 +66,10 @@ def ft_util_pop_task_from_list(task, tl):
 def ft_util_format_cmd_split(cmd, arg_num):
     return cmd.split(' ', arg_num)
 
+def ft_util_file_exist(file_name):
+    return os.path.exists(file_name)
 
+def ft_util_rm_file(file_name):
+    if ft_util_file_exist(file_name):
+        os.remove(file_name)
 
