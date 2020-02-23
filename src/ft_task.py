@@ -168,6 +168,8 @@ class FtTask(object):
 
         self.is_update = False
 
+        self.db_handle = None
+
     def __touch(self):
         # TODO: Need Lock
         self.is_update = True
@@ -229,10 +231,11 @@ class FtTask(object):
     def __insert_to_db(self):
         self.db_handle.insert(self)
 
-    def set_task_file(self, db_handle, log_f):
+    def set_task_file(self, db_handle, log_f, is_new):
         self.db_handle = db_handle
         self.log_file_name = log_f
 
-        self.__insert_to_db()
+        if is_new:
+            self.__insert_to_db()
 
 

@@ -42,6 +42,8 @@ class FtMgr(object):
         for x in db_rec_result:
             obj = ft_task.create_task_by_rec_db(x)
 
+            obj.set_task_file(self.task_rec_db, self.__compose_task_file_name(obj.task_id + '.log'), False)
+
             state = obj.get_state()
 
             if FtTaskState.FtTaskDone != state:
@@ -135,7 +137,7 @@ class FtMgr(object):
 
         task.task_id = self.__gen_task_id()
 
-        task.set_task_file(self.task_rec_db, self.__compose_task_file_name(task.task_id + '.log'))
+        task.set_task_file(self.task_rec_db, self.__compose_task_file_name(task.task_id + '.log'), True)
 
         print('new task %s'%(task.task_id))
 

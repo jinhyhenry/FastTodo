@@ -74,9 +74,10 @@ def __print_tasks():
     ft_util.ft_util_dump_task_list(tmp_list, 'on_task')
 
     cur_task = gFtMgr.get_cur_task()
-    print('CurTaskInfo...>')
-    cur_task.dump()
-    print('\n')
+    if cur_task != None:
+        print('CurTaskInfo...>')
+        cur_task.dump()
+        print('\n')
 
     tmp_list = __get_task_list('done')
     ft_util.ft_util_dump_task_list(tmp_list, 'done_task')
