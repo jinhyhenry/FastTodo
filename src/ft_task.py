@@ -14,6 +14,26 @@ def task_state_i2a(state_int):
     if state_int == FtTaskState.FtTaskDone:
         return 'Abandon'
 
+def create_task_by_rec_db(db_result):
+    assert db_result != None, 'null db_result'
+    assert len(db_result) != 1, 'len of input must be one'
+
+    para = FtTaskParam()
+
+    para.task_name = db_result[1]
+    para.prior = int(db_result[2])
+
+    task_obj = FtTask(para)
+    #Load Other Params
+    task_obj.task_id = db_result[0]
+    task_obj.state = int(db_result[3])
+    task_obj.create_time = db_result[4]
+    task_obj.start_time = db_result[5]
+    task_obj.end_time = db_result[6]
+
+    return task_obj
+
+
 class FtTaskState(object):
     FtTaskIdle = 0
     FtTaskWorking = 1
@@ -133,6 +153,7 @@ class FtTaskDb(object):
 
 class FtTask(object):
     def __init__(self, params):
+        self.task_id = ' '
         self.name = params.task_name
         self.prior = params.prior
         self.state = FtTaskState.FtTaskIdle
