@@ -71,6 +71,15 @@ def __get_task_list(type):
 
 def __print_tasks():
     tmp_list = __get_task_list('on')
+    ft_util.ft_util_dump_task_list(tmp_list, 'on_task')
+
+    cur_task = gFtMgr.get_cur_task()
+    print('CurTaskInfo...>')
+    cur_task.dump()
+    print('\n')
+
+    tmp_list = __get_task_list('done')
+    ft_util.ft_util_dump_task_list(tmp_list, 'done_task')
 
 def __set_workspace_ui():
     print('Please Input ABSOLUTE-Path..')
@@ -114,6 +123,7 @@ def __parse_cmd(cmd):
         exit(0)
 
     if cmd == 'print':
+        __print_tasks()
         return
 
     if cmd == 'reset':
