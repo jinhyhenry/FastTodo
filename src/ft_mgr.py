@@ -1,4 +1,5 @@
 import ft_util
+import ft_task
 from ft_task import FtTaskParam,FtTask,FtTaskState,FtTaskDb
 from ft_ust import FtUst
 
@@ -38,6 +39,22 @@ class FtMgr(object):
     def __init_tasks_from_db_result(self, db_rec_result):
         print(db_rec_result)
         # TODO: create tasks
+        for x in db_rec_result:
+            obj = ft_task.create_task_by_rec_db(x)
+
+            state = obj.get_state()
+
+            if FtTaskState.FtTaskDone != state:
+                self.on_task_list.append(obj)
+
+                if FtTaskState.FtTaskWorking == state:
+                    self.cur_task = obj
+                    self.mgr_state = FtMgrState.FtMgrWorking
+
+            else:
+                self.done_task_list.append(obj)
+        print('recover done')
+
 
     def __init_db_task_rec(self):
         db_file = self.__compose_task_file_name(g_db_file_name)
