@@ -146,6 +146,11 @@ class FtTaskDb(object):
             if 0 != len(res_working):
                 res_idle.append(res_working[0])
 
+            state_obj.set_val(FtTaskState.FtTaskDone)
+            res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
+            if 0 != len(res_working):
+                res_idle.append(res_working[0])
+
             return res_idle
 
     def close(self):
