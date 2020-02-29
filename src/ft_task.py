@@ -211,6 +211,22 @@ class FtTask(object):
 
         print('task %s-%s just abandon'%(self.task_id, self.name))
 
+    def resume(self):
+        # check if task need to be resume
+        if self.state != FtTaskState.FtTaskDone and self.state != FtTaskState.FtTaskAbandon:
+            print('task %s-%s can not resume, state %d'%(self.task_id, self.name, self.state))
+            return -1
+
+        self.state = FtTaskState.FtTaskIdle
+        self.end_time = 0
+
+        self.db_handle.update_by_id('end_time', self.end_time, self.task_id)
+        self.db_handle.update_by_id('state', self.state, self.task_id)
+
+        print('task %s-%s just resume'%(self.task_id, self.name))
+
+        return 0
+
     def stop(self):
         self.end_time = ft_util.ft_util_get_cur_ts()
         self.state = FtTaskState.FtTaskIdle

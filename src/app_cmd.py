@@ -20,6 +20,10 @@ def __done_task_server(task_id):
     assert task_id != None, 'task_id is none'
     gFtMgr.switch_task(task_id, FtMgrTaskOps.FtMgrTaskDone, None)
 
+def __resume_task_server(task_id):
+    assert task_id != None, 'task_id is none'
+    gFtMgr.switch_task(task_id, FtMgrTaskOps.FtMgrTaskResume, None)
+
 def __new_task_ui():
     para = FtTaskParam()
 
@@ -153,6 +157,11 @@ def __parse_cmd(cmd):
     if cmd == 'mgr_dump' or cmd == 'md':
         assert None != gFtMgr, 'none ft'
         gFtMgr.dump_mgr_info()
+        return
+
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+    if cmd_arg_l[0] == 'resume' or cmd_arg_l[0] == 'r':
+        __resume_task_server(cmd_arg_l[1])
         return
 
     print('ERROR: Invalid Cmd Input -- %s'%(cmd))
