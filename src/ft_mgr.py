@@ -15,6 +15,7 @@ class FtMgrTaskOps():
     FtMgrTaskSuspend = 3
     FtMgrTaskProcOn = 4
     FtMgrTaskDone = 5
+    FtMgrTaskResume = 6
 
 g_db_file_name = 'ft_task_rec.db'
 
@@ -41,6 +42,8 @@ class FtMgr(object):
         # TODO: create tasks
         for x in db_rec_result:
             obj = ft_task.create_task_by_rec_db(x)
+
+            obj.set_task_file(self.task_rec_db, self.__compose_task_file_name(obj.task_id + '.log'), False)
 
             state = obj.get_state()
 
@@ -94,6 +97,8 @@ class FtMgr(object):
             self.__done_task(tmp_task)
         elif op == FtMgrTaskOps.FtMgrTaskSuspend:
             self.__stop_task(tmp_task)
+        elif op == FtMgrTaskOps.FtMgrTaskResume:
+            self.__resume_task(tmp_task)
 
         print('switch_task X success')
 
@@ -135,7 +140,7 @@ class FtMgr(object):
 
         task.task_id = self.__gen_task_id()
 
-        task.set_task_file(self.task_rec_db, self.__compose_task_file_name(task.task_id + '.log'))
+        task.set_task_file(self.task_rec_db, self.__compose_task_file_name(task.task_id + '.log'), True)
 
         print('new task %s'%(task.task_id))
 
@@ -169,6 +174,13 @@ class FtMgr(object):
             task.stop()
             if (task == self.cur_task):
                 self.mgr_state = FtMgrState.FtMgrIdle
+
+    def __resume_task(self, task):
+        # TODO: this will search twice
+        if task.resume() < 0:
+            print('resume failed...')
+        ft_util.ft_util_pop_task_from_list(task, self.done_task_list)
+        self.on_task_list.append(task)
 
     def get_cur_task(self):
         return self.cur_task

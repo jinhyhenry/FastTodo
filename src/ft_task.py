@@ -146,6 +146,11 @@ class FtTaskDb(object):
             if 0 != len(res_working):
                 res_idle.append(res_working[0])
 
+            state_obj.set_val(FtTaskState.FtTaskDone)
+            res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
+            if 0 != len(res_working):
+                res_idle.append(res_working[0])
+
             return res_idle
 
     def close(self):
@@ -167,6 +172,8 @@ class FtTask(object):
         self.is_date = params.is_date
 
         self.is_update = False
+
+        self.db_handle = None
 
     def __touch(self):
         # TODO: Need Lock
@@ -204,6 +211,22 @@ class FtTask(object):
 
         print('task %s-%s just abandon'%(self.task_id, self.name))
 
+    def resume(self):
+        # check if task need to be resume
+        if self.state != FtTaskState.FtTaskDone and self.state != FtTaskState.FtTaskAbandon:
+            print('task %s-%s can not resume, state %d'%(self.task_id, self.name, self.state))
+            return -1
+
+        self.state = FtTaskState.FtTaskIdle
+        self.end_time = 0
+
+        self.db_handle.update_by_id('end_time', self.end_time, self.task_id)
+        self.db_handle.update_by_id('state', self.state, self.task_id)
+
+        print('task %s-%s just resume'%(self.task_id, self.name))
+
+        return 0
+
     def stop(self):
         self.end_time = ft_util.ft_util_get_cur_ts()
         self.state = FtTaskState.FtTaskIdle
@@ -229,10 +252,11 @@ class FtTask(object):
     def __insert_to_db(self):
         self.db_handle.insert(self)
 
-    def set_task_file(self, db_handle, log_f):
+    def set_task_file(self, db_handle, log_f, is_new):
         self.db_handle = db_handle
         self.log_file_name = log_f
 
-        self.__insert_to_db()
+        if is_new:
+            self.__insert_to_db()
 
 
