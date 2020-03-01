@@ -133,25 +133,29 @@ class FtTaskDb(object):
 
         self.db_hdl.update(g_db_on_table_name, tmp_l)
 
-    def load_all_tasks(self, is_task_abandoned):
-        if is_task_abandoned == False:
-            state_obj = self.__get_item_obj('state')
-            state_obj.set_val(FtTaskState.FtTaskIdle)
-            tmp_l = [state_obj]
+    def load_all_tasks(self):
+        state_obj = self.__get_item_obj('state')
+        state_obj.set_val(FtTaskState.FtTaskIdle)
+        tmp_l = [state_obj]
 
-            res_idle = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
+        res_idle = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
 
-            state_obj.set_val(FtTaskState.FtTaskWorking)
-            res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
-            if 0 != len(res_working):
-                res_idle.append(res_working[0])
+        state_obj.set_val(FtTaskState.FtTaskWorking)
+        res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
+        if 0 != len(res_working):
+            res_idle.append(res_working[0])
 
-            state_obj.set_val(FtTaskState.FtTaskDone)
-            res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
-            if 0 != len(res_working):
-                res_idle.append(res_working[0])
+        state_obj.set_val(FtTaskState.FtTaskDone)
+        res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
+        if 0 != len(res_working):
+            res_idle.append(res_working[0])
 
-            return res_idle
+        state_obj.set_val(FtTaskState.FtTaskAbandon)
+        res_working = self.db_hdl.lookup(g_db_on_table_name, tmp_l)
+        if 0 != len(res_working):
+            res_idle.append(res_working[0])
+
+        return res_idle
 
     def close(self):
         self.db_hdl.close()
@@ -204,7 +208,7 @@ class FtTask(object):
 
     def abandon(self):
         self.end_time = ft_util.ft_util_get_cur_ts()
-        self.state = FtTaskState.FtTaskIdle
+        self.state = FtTaskState.FtTaskAbandon
 
         self.db_handle.update_by_id('end_time', self.end_time, self.task_id)
         self.db_handle.update_by_id('state', self.state, self.task_id)

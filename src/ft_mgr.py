@@ -47,15 +47,19 @@ class FtMgr(object):
 
             state = obj.get_state()
 
-            if FtTaskState.FtTaskDone != state:
+            if FtTaskState.FtTaskDone == state:
+                self.done_task_list.append(obj)
+            elif FtTaskState.FtTaskIdle == state:
+                self.on_task_list.append(obj)
+            elif FtTaskState.FtTaskWorking == state:
                 self.on_task_list.append(obj)
 
-                if FtTaskState.FtTaskWorking == state:
-                    self.cur_task = obj
-                    self.mgr_state = FtMgrState.FtMgrWorking
+                self.cur_task = obj
+                self.mgr_state = FtMgrState.FtMgrWorking
 
-            else:
-                self.done_task_list.append(obj)
+            elif FtTaskState.FtTaskAbandon == state:
+                self.abandon_task_list.append(obj)
+
         print('recover done')
 
 
@@ -63,7 +67,7 @@ class FtMgr(object):
         db_file = self.__compose_task_file_name(g_db_file_name)
         self.task_rec_db = FtTaskDb(db_file)
 
-        self.__init_tasks_from_db_result(self.task_rec_db.load_all_tasks(False))
+        self.__init_tasks_from_db_result(self.task_rec_db.load_all_tasks())
 
     def reset_task_db(self):
         self.task_rec_db.close()
@@ -78,6 +82,7 @@ class FtMgr(object):
         print('Mgr Name is %s'%(self.name))
         ft_util.ft_util_dump_task_list(self.on_task_list, 'on_list')
         ft_util.ft_util_dump_task_list(self.done_task_list, 'done_list')
+        ft_util.ft_util_dump_task_list(self.abandon_task_list, 'abd_list')
 
     def switch_task(self, task_id, op, params):
         print('switch E: op %d, task_id %s'%(op, task_id))
@@ -99,6 +104,8 @@ class FtMgr(object):
             self.__stop_task(tmp_task)
         elif op == FtMgrTaskOps.FtMgrTaskResume:
             self.__resume_task(tmp_task)
+        elif op == FtMgrTaskOps.FtMgrTaskDelete:
+            self.__abandon_task(tmp_task)
 
         print('switch_task X success')
 
@@ -176,11 +183,35 @@ class FtMgr(object):
                 self.mgr_state = FtMgrState.FtMgrIdle
 
     def __resume_task(self, task):
-        # TODO: this will search twice
         if task.resume() < 0:
             print('resume failed...')
-        ft_util.ft_util_pop_task_from_list(task, self.done_task_list)
+        task_state = task.get_state()
+
+        if task_state == FtTaskState.FtTaskAbandon:
+            ft_util.ft_util_pop_task_from_list(task, self.abandon_task_list)
+        if task_state == FtTaskState.FtTaskDone:
+            ft_util.ft_util_pop_task_from_list(task, self.done_task_list)
+
         self.on_task_list.append(task)
+
+    def __abandon_task(self, task):
+        task_state = task.get_state()
+
+        if task_state != FtTaskState.FtTaskAbandon:
+
+            if task_state == FtTaskState.FtTaskWorking:
+                self.mgr_state = FtMgrState.FtMgrIdle
+                self.__clear_cur_task()
+                ft_util.ft_util_pop_task_from_list(task, self.on_task_list)
+
+            if task_state == FtTaskState.FtTaskDone:
+                ft_util.ft_util_pop_task_from_list(task, self.done_task_list)
+
+            if task_state == FtTaskState.FtTaskIdle:
+                ft_util.ft_util_pop_task_from_list(task, self.on_task_list)
+
+            task.abandon()
+            self.abandon_task_list.append(task)
 
     def get_cur_task(self):
         return self.cur_task
