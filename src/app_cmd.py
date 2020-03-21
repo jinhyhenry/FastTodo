@@ -115,7 +115,7 @@ def __print_menu():
     print('\nFunctions --------------------->')
     print('new[n]           --- new a task')
     print('start[s] xxx     --- start xxx task')
-    print('pause[p]         --- pause task')
+    print('pause[p] xxx     --- pause task')
     print('finish[f] xxx    --- finish xxx task')
     print('abandon[ab] xxx  --- abandon xxx task')
     print('resume [r] xxx   --- resume or redo xxx task')
