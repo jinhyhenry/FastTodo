@@ -1,6 +1,6 @@
 import ft_util
-from ft_mgr import FtMgr,FtMgrTaskOps
-from ft_task import FtTaskParam,FtTask,FtTaskState
+from ft_mgr import FtMgr,FtMgrTaskOps,FtMgrTaskListType
+from ft_task import FtTaskParam,FtTask,FtTaskState,FtTaskProperty
 
 gFtMgr = FtMgr('cmd_app')
 
@@ -27,6 +27,19 @@ def __resume_task_server(task_id):
 def __abandon_task_server(task_id):
     assert task_id != None, 'task_id is none'
     gFtMgr.switch_task(task_id, FtMgrTaskOps.FtMgrTaskDelete, None)
+
+def __sort_server(l_type, t_prop):
+    gFtMgr.sort_task_list(l_type, t_prop)
+    print('Done!')
+
+def __sort_help_print():
+    print('**** Sort Help E ****')
+
+    print('list: Done %d, Working %d, FtMgrAbandon %d'%(FtMgrTaskListType.FtMgrAbandon, FtMgrTaskListType.FtMgrWorking, FtMgrTaskListType.FtMgrAbandon))
+
+    print('task prop: Prior %d, CreateTime %d'%(FtTaskProperty.FtTaskPrior, FtTaskProperty.FtTaskCreateTime))
+
+    print('**** Sort Help X ****')
 
 def __new_task_ui():
     para = FtTaskParam()
@@ -69,16 +82,8 @@ def __new_task_ui():
     __new_task_server(para)
     print('new task done!')
 
-def __get_task_list(type):
-    if type == 'on':
-        return gFtMgr.get_task_list()
-    elif type == 'done':
-        return gFtMgr.get_done_task_list()
-    elif type == 'abandon':
-        return gFtMgr.get_abandon_task_list()
-
 def __print_tasks():
-    tmp_list = __get_task_list('on')
+    tmp_list = gFtMgr.get_task_list(FtMgrTaskListType.FtMgrWorking)
     ft_util.ft_util_dump_task_list(tmp_list, 'on_task')
 
     cur_task = gFtMgr.get_cur_task()
@@ -87,10 +92,10 @@ def __print_tasks():
         cur_task.dump()
         print('\n')
 
-    tmp_list = __get_task_list('done')
+    tmp_list = gFtMgr.get_task_list(FtMgrTaskListType.FtMgrDone)
     ft_util.ft_util_dump_task_list(tmp_list, 'done_task')
 
-    tmp_list = __get_task_list('abandon')
+    tmp_list = gFtMgr.get_task_list(FtMgrTaskListType.FtMgrAbandon)
     ft_util.ft_util_dump_task_list(tmp_list, 'abandon_task')
 
 def __set_workspace_ui():
@@ -118,6 +123,7 @@ def __print_menu():
     print('reset            --- reset task rec db')
     print('help[h]          --- help(menu)')
     print('exit[q]          --- quit app')
+    print('sort -l xx -c yy --- -l for type of list, -c for t_prop, -h for help')
 
     print('\nSettings --------------------->')
     print('print_ust[pu]    --- print user settings')
@@ -146,17 +152,17 @@ def __parse_cmd(cmd):
         __new_task_ui()
         return
 
-    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd)
     if cmd_arg_l[0] == 'start' or cmd_arg_l[0] == 's':
         __start_task_server(cmd_arg_l[1])
         return
 
-    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd)
     if cmd_arg_l[0] == 'pause' or cmd_arg_l[0] == 'p':
         __stop_task_server(cmd_arg_l[1])
         return
 
-    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd)
     if cmd_arg_l[0] == 'finish' or cmd_arg_l[0] == 'f':
         __done_task_server(cmd_arg_l[1])
         return
@@ -166,14 +172,24 @@ def __parse_cmd(cmd):
         gFtMgr.dump_mgr_info()
         return
 
-    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd)
     if cmd_arg_l[0] == 'resume' or cmd_arg_l[0] == 'r':
         __resume_task_server(cmd_arg_l[1])
         return
 
-    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd, 1)
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd)
     if cmd_arg_l[0] == 'abandon' or cmd_arg_l[0] == 'ab':
         __abandon_task_server(cmd_arg_l[1])
+        return
+
+    cmd_arg_l = ft_util.ft_util_format_cmd_split(cmd)
+    if cmd_arg_l[0] == 'sort':
+        if cmd_arg_l[1] == '-h':
+            __sort_help_print()
+        if cmd_arg_l[1] == '-l':
+            if (len(cmd_arg_l) != 5):
+                print('should enter: sort -l xx -c yy')
+            __sort_server(int(cmd_arg_l[2]), int(cmd_arg_l[4]))
         return
 
     print('ERROR: Invalid Cmd Input -- %s'%(cmd))

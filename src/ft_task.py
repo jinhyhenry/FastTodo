@@ -4,6 +4,10 @@ sys.path.append('./base/')
 import ft_util
 from mini_db import MiniDBPerItem, MiniDB
 
+class FtTaskProperty():
+    FtTaskPrior = 0
+    FtTaskCreateTime = 1
+
 def task_state_i2a(state_int):
     if state_int == FtTaskState.FtTaskIdle:
         return 'TaskIdle'

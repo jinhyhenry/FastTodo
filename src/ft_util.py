@@ -63,8 +63,18 @@ def ft_util_pop_task_from_list(task, tl):
     tl.pop(i)
     return 0
 
-def ft_util_format_cmd_split(cmd, arg_num):
-    return cmd.split(' ', arg_num)
+def __sort_by_prior(task):
+    return task.prior
+
+def __sort_by_create_time(task):
+    return task.create_time
+
+def ft_util_sort_task_by_prior(task_list):
+    task_list.sort(key = __sort_by_prior)
+    return task_list
+
+def ft_util_format_cmd_split(cmd):
+    return cmd.split(' ')
 
 def ft_util_file_exist(file_name):
     return os.path.exists(file_name)

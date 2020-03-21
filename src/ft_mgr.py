@@ -1,7 +1,12 @@
 import ft_util
 import ft_task
-from ft_task import FtTaskParam,FtTask,FtTaskState,FtTaskDb
+from ft_task import FtTaskParam,FtTask,FtTaskState,FtTaskDb,FtTaskProperty
 from ft_ust import FtUst
+
+class FtMgrTaskListType():
+    FtMgrDone = 0
+    FtMgrWorking = 1
+    FtMgrAbandon = 2
 
 class FtMgrState():
     FtMgrIdle = 0
@@ -216,14 +221,14 @@ class FtMgr(object):
     def get_cur_task(self):
         return self.cur_task
 
-    def get_task_list(self):
-        return self.on_task_list
-
-    def get_abandon_task_list(self):
-        return self.abandon_task_list
-
-    def get_done_task_list(self):
-        return self.done_task_list
+    def get_task_list(self, list_type):
+        if list_type == FtMgrTaskListType.FtMgrAbandon:
+            return self.abandon_task_list
+        if list_type == FtMgrTaskListType.FtMgrDone:
+            return self.done_task_list
+        if list_type == FtMgrTaskListType.FtMgrWorking:
+            return self.on_task_list
+        return None
 
     def set_workspace(self, path):
         self.ust.set('workspace_path', path)
@@ -232,6 +237,13 @@ class FtMgr(object):
     def get_workspace(self):
         return self.ust.query('workspace_path')
 
+    def sort_task_list(self, list_type, sort_type):
+        t_l = self.get_task_list(list_type)
+        assert (t_l != None), 'wrong list type'
 
+        if sort_type == FtTaskProperty.FtTaskPrior:
+            t_l = ft_util.ft_util_sort_task_by_prior(t_l)
+            return
 
+        assert 0, 'Not Support'
 
